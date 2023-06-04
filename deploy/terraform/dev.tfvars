@@ -13,5 +13,5 @@ db_subnet_1_cidr      = "10.45.21.0/24"
 db_subnet_2_cidr      = "10.45.22.0/24"
 
 
-ecr_image     = "<ADD_FULL_IMAGE_PATH>"
-ecr_image_tag = "<ADD_IMAGE_TAG>"
+ecr_image     = "docker pull ghcr.io/tairov/simple-blockchain-client"
+ecr_image_tag = "master"
