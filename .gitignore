@@ -1,0 +1,5 @@
+.idea/
+*.iml
+*.creds.tfvars
+.terraform
+.pytest_cache
