@@ -1,76 +1,204 @@
-variable "env" {
-  default = ""
-}
-
-data "aws_availability_zones" "available" {
-  state = "available"
-}
-
-resource "aws_vpc" "vpc_01" {
-  cidr_block = "10.0.0.0/16"
+resource "aws_vpc" "vpc-1" {
+  cidr_block           = var.vpc_cidr
+  enable_dns_hostnames = true
 
   tags = {
-    Name = "vpc-${var.env}"
+    Name        = "${var.project}-${var.env}-vpc-1"
+    environment = var.env
+    project     = var.project
+    creator     = "terraform"
   }
 }
 
-resource "aws_subnet" "subnet_01" {
-  availability_zone = data.aws_availability_zones.available.names[0]
-
-  vpc_id                  = aws_vpc.vpc_01.id
-  cidr_block              = "10.0.1.0/24"
-  map_public_ip_on_launch = true
+resource "aws_subnet" "public-subnet-1" {
+  cidr_block        = var.public_subnet_1_cidr
+  vpc_id            = aws_vpc.vpc-1.id
+  availability_zone = "${var.region}a"
 
   tags = {
-    Name                            = "subnet-01-${var.env}"
-    "kubernetes.io/cluster/eks-dev" = "shared"
+    Name                                            = "${var.project}-${var.env}-public-subnet-1"
+    environment                                     = var.env
+    project                                         = var.project
+    creator                                         = "terraform"
   }
 }
 
-resource "aws_subnet" "subnet_02" {
-  availability_zone       = data.aws_availability_zones.available.names[1]
-  vpc_id                  = aws_vpc.vpc_01.id
-  cidr_block              = "10.0.2.0/24"
-  map_public_ip_on_launch = true
+resource "aws_subnet" "public-subnet-2" {
+  cidr_block        = var.public_subnet_2_cidr
+  vpc_id            = aws_vpc.vpc-1.id
+  availability_zone = "${var.region}b"
 
   tags = {
-    Name                            = "subnet-02-${var.env}"
-    "kubernetes.io/cluster/eks-dev" = "shared"
+    Name                                            = "${var.project}-${var.env}-public-subnet-2"
+    environment                                     = var.env
+    project                                         = var.project
+    creator                                         = "terraform"
   }
 }
 
-output "vpc_01_id" {
-  value = aws_vpc.vpc_01.id
+resource "aws_subnet" "private-subnet-1" {
+  cidr_block        = var.private_subnet_1_cidr
+  vpc_id            = aws_vpc.vpc-1.id
+  availability_zone = "${var.region}a"
+
+  tags = {
+    Name                                            = "${var.project}-${var.env}-private-subnet-1"
+    environment                                     = var.env
+    project                                         = var.project
+    creator                                         = "terraform"
+  }
 }
 
-output "subnet_01_id" {
-  value = aws_subnet.subnet_01.id
+resource "aws_subnet" "private-subnet-2" {
+  cidr_block        = var.private_subnet_2_cidr
+  vpc_id            = aws_vpc.vpc-1.id
+  availability_zone = "${var.region}b"
+
+  tags = {
+    Name                                            = "${var.project}-${var.env}-private-subnet-2"
+    environment                                     = var.env
+    project                                         = var.project
+    creator                                         = "terraform"
+  }
 }
 
-output "subnet_02_id" {
-  value = aws_subnet.subnet_02.id
+resource "aws_subnet" "db-subnet-1" {
+  cidr_block        = var.db_subnet_1_cidr
+  vpc_id            = aws_vpc.vpc-1.id
+  availability_zone = "${var.region}a"
+
+  tags = {
+    Name        = "${var.project}-${var.env}-db-subnet-1"
+    environment = var.env
+    project     = var.project
+    creator     = "terraform"
+  }
 }
 
-resource "aws_internet_gateway" "internet_gw_01" {
-  vpc_id = aws_vpc.vpc_01.id
+resource "aws_subnet" "db-subnet-2" {
+  cidr_block        = var.db_subnet_2_cidr
+  vpc_id            = aws_vpc.vpc-1.id
+  availability_zone = "${var.region}b"
+
+  tags = {
+    Name        = "${var.project}-${var.env}-db-subnet-2"
+    environment = var.env
+    project     = var.project
+    creator     = "terraform"
+  }
 }
 
-resource "aws_eip" "eip_01" {
+resource "aws_route_table" "public-route-table" {
+  vpc_id = aws_vpc.vpc-1.id
+  tags   = {
+    Name        = "${var.project}-${var.env}-public-route-table"
+    environment = var.env
+    project     = var.project
+    creator     = "terraform"
+  }
+}
+
+resource "aws_route_table" "private-route-table" {
+  vpc_id = aws_vpc.vpc-1.id
+  tags   = {
+    Name        = "${var.project}-${var.env}-private-route-table"
+    environment = var.env
+    project     = var.project
+    creator     = "terraform"
+  }
+}
+
+# route table for databases
+# doens't have access to/from public internet
+resource "aws_route_table" "db-route-table" {
+  vpc_id = aws_vpc.vpc-1.id
+  tags   = {
+    Name        = "${var.project}-${var.env}-db-route-table"
+    environment = var.env
+    project     = var.project
+    creator     = "terraform"
+  }
+}
+
+resource "aws_route_table_association" "public-route-1-association" {
+  route_table_id = aws_route_table.public-route-table.id
+  subnet_id      = aws_subnet.public-subnet-1.id
+}
+
+resource "aws_route_table_association" "public-route-2-association" {
+  route_table_id = aws_route_table.public-route-table.id
+  subnet_id      = aws_subnet.public-subnet-2.id
+}
+
+resource "aws_route_table_association" "private-route-1-association" {
+  route_table_id = aws_route_table.private-route-table.id
+  subnet_id      = aws_subnet.private-subnet-1.id
+}
+
+resource "aws_route_table_association" "private-route-2-association" {
+  route_table_id = aws_route_table.private-route-table.id
+  subnet_id      = aws_subnet.private-subnet-2.id
+}
+
+resource "aws_route_table_association" "db-route-1-association" {
+  route_table_id = aws_route_table.db-route-table.id
+  subnet_id      = aws_subnet.db-subnet-1.id
+}
+
+resource "aws_route_table_association" "db-route-2-association" {
+  route_table_id = aws_route_table.db-route-table.id
+  subnet_id      = aws_subnet.db-subnet-2.id
+}
+
+resource "aws_eip" "nat-gw-eip" {
   vpc = true
 
+  tags = {
+    Name        = "${var.project}-${var.env}-nat-gw-eip"
+    environment = var.env
+    project     = var.project
+    creator     = "terraform"
+  }
+
   depends_on = [
-  aws_internet_gateway.internet_gw_01]
+    aws_internet_gateway.internet-gateway
+  ]
 }
 
-resource "aws_route_table" "route_table_01" {
-  vpc_id = aws_vpc.vpc_01.id
-
-  route {
-    cidr_block = "0.0.0.0/0"
-    gateway_id = aws_internet_gateway.internet_gw_01.id
-  }
+resource "aws_nat_gateway" "nat-gw" {
+  allocation_id = aws_eip.nat-gw-eip.id
+  subnet_id     = aws_subnet.public-subnet-1.id
 
   tags = {
-    Name = "aws_route_table"
+    Name        = "${var.project}-${var.env}-nat-gateway"
+    environment = var.env
+    project     = var.project
+    creator     = "terraform"
   }
+
+  depends_on = [
+    aws_eip.nat-gw-eip
+  ]
+}
+
+resource "aws_route" "nat-gw-route" {
+  route_table_id         = aws_route_table.private-route-table.id
+  nat_gateway_id         = aws_nat_gateway.nat-gw.id
+  destination_cidr_block = "0.0.0.0/0"
+}
+
+resource "aws_internet_gateway" "internet-gateway" {
+  vpc_id = aws_vpc.vpc-1.id
+  tags   = {
+    Name        = "${var.project}-${var.env}-internet-gateway"
+    environment = var.env
+    project     = var.project
+    creator     = "terraform"
+  }
+}
+
+resource "aws_route" "public-internet-igw-route" {
+  route_table_id         = aws_route_table.public-route-table.id
+  gateway_id             = aws_internet_gateway.internet-gateway.id
+  destination_cidr_block = "0.0.0.0/0"
 }

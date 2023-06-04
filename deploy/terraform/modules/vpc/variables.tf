@@ -1,9 +1,10 @@
-variable "env" {
-  description = "Project environment"
-}
-
 variable "project" {
   description = "Project name"
+}
+
+# environment name: production, staging, qa, dev
+variable "env" {
+  description = "Project environment"
 }
 
 variable "region" {
@@ -28,7 +29,7 @@ variable "private_subnet_1_cidr" {
 }
 
 variable "private_subnet_2_cidr" {
-  description = "CIDR Block for  Private Subnet 2"
+  description = "CIDR Block for Private Subnet 2"
 }
 
 variable "db_subnet_1_cidr" {
@@ -37,11 +38,4 @@ variable "db_subnet_1_cidr" {
 
 variable "db_subnet_2_cidr" {
   description = "CIDR Block for Db Subnet 2"
-}
-
-variable "ecr_image" {
-  description = "ECR Image"
-}
-variable "ecr_image_tag" {
-  description = "ECR Image Tag"
 }
