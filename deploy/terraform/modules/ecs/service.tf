@@ -2,11 +2,11 @@ data "template_file" "client_service_template" {
   template = file("client-service.json.tpl")
 
   vars = {
-    region = var.region
+    region  = var.region
     project = var.project
-    env = var.env
-    image = var.image
-    tag = var.tag
+    env     = var.env
+    image   = var.image
+    tag     = var.tag
   }
 }
 
@@ -23,8 +23,8 @@ resource "aws_ecs_task_definition" "ecs_task_definition" {
 }
 
 resource "aws_ecs_service" "ecs-service-1" {
-  cluster         = aws_ecs_cluster.ecs-1.name
-  name            = "${var.project}-${var.env}-ecs-service-app"
+  cluster = aws_ecs_cluster.ecs-1.name
+  name    = "${var.project}-${var.env}-ecs-service-app"
   # task_definition must be update from ci/cd as well
   task_definition = aws_ecs_task_definition.ecs_task_definition.arn
   desired_count   = 1
@@ -41,7 +41,7 @@ resource "aws_ecs_service" "ecs-service-1" {
   }
 
   network_configuration {
-    subnets          = [var.subnet_1_id, var.subnet_2_id]
+    subnets = [var.subnet_1_id, var.subnet_2_id]
     # list of security groups
     security_groups  = var.app_security_groups
     assign_public_ip = false
