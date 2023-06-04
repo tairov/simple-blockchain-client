@@ -13,5 +13,5 @@ db_subnet_1_cidr      = "10.45.21.0/24"
 db_subnet_2_cidr      = "10.45.22.0/24"
 
 
-ecr_image = ""
-ecr_image_tag = ""
+ecr_image = "<ADD_FULL_IMAGE_PATH>"
+ecr_image_tag = "<ADD_IMAGE_TAG>"

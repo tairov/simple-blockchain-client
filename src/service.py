@@ -3,7 +3,6 @@ webservice for REST API
 """
 
 from flask import Flask
-from flask_httpauth import HTTPBasicAuth
 from flask import jsonify
 from dataprovider import DataProvider
 from dotenv import dotenv_values
@@ -20,8 +19,6 @@ def create_app():
 
 
 app = create_app()
-
-auth = HTTPBasicAuth()
 
 config = dotenv_values('.env')
 
